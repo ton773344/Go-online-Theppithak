@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>หมากล้อม 19x19 พร้อมนับแต้ม</title>
+<style>
+body { display: flex; flex-direction: column; align-items: center; margin: 0; background: #f0f0f0; }
+canvas { box-shadow: 0 0 10px rgba(0,0,0,0.3); margin-top: 20px; }
+#score { font-size: 18px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<canvas id="board" width="760" height="760"></canvas>
+<div id="score">ดำ: 0 | ขาว: 0</div>
+<script>
+const canvas = document.getElementById('board');
+const ctx = canvas.getContext('2d');
+
+const boardSize = 19;
+const cellSize = 40;
+let currentPlayer = 'black';
+let board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
+
+const scoreDiv = document.getElementById('score');
+
+// วาดพื้นกระดาน
+ctx.fillStyle = '#f5deb3';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// วาดเส้นกระดาน
+ctx.strokeStyle = 'black';
+ctx.lineWidth = 1;
+for (let i = 0; i < boardSize; i++) {
+  ctx.beginPath();
+  ctx.moveTo(cellSize/2, cellSize/2 + i*cellSize);
+  ctx.lineTo(cellSize/2 + cellSize*(boardSize-1), cellSize/2 + i*cellSize);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cellSize/2 + i*cellSize, cellSize/2);
+  ctx.lineTo(cellSize/2 + i*cellSize, cellSize/2 + cellSize*(boardSize-1));
+  ctx.stroke();
+}
+
+// จุด Star Point
+const starPoints = [3, 9, 15];
+ctx.fillStyle = 'black';
+starPoints.forEach(r => {
+  starPoints.forEach(c => {
+    ctx.beginPath();
+    ctx.arc(cellSize/2 + c*cellSize, cellSize/2 + r*cellSize, 5, 0, 2*Math.PI);
+    ctx.fill();
+  });
+});
+
+// ฟังก์ชั่นอัพเดตแต้ม
+function updateScore() {
+  let blackCount = 0;
+  let whiteCount = 0;
+  for (let r = 0; r < boardSize; r++) {
+    for (let c = 0; c < boardSize; c++) {
+      if (board[r][c] === 'black') blackCount++;
+      if (board[r][c] === 'white') whiteCount++;
+    }
+  }
+  scoreDiv.textContent = `ดำ: ${blackCount} | ขาว: ${whiteCount}`;
+}
+
+// วางหมาก
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const col = Math.round((x - cellSize/2)/cellSize);
+  const row = Math.round((y - cellSize/2)/cellSize);
+
+  if(row>=0 && row<boardSize && col>=0 && col<boardSize && !board[row][col]){
+    board[row][col] = currentPlayer;
+
+    ctx.beginPath();
+    ctx.arc(cellSize/2 + col*cellSize, cellSize/2 + row*cellSize, cellSize*0.4, 0, 2*Math.PI);
+    ctx.fillStyle = currentPlayer;
+    ctx.fill();
+
+    currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+    updateScore();
+  }
+});
+</script>
+</body>
+</html>
